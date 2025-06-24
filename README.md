@@ -61,5 +61,5 @@ A feature-packed Discord bot to get detailed movie & TV show info, trailers, cas
 
 1️⃣ **Clone the repo**
 ```bash
-git clone https://github.com/YOUR_USERNAME/movie-bot.git
+git clone https://github.com/Sashreek007/movie-bot.git
 cd movie-bot
