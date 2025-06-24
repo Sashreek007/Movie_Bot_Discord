@@ -90,7 +90,7 @@ async def on_message(message):
                 embed.set_image(url=poster)
             await message.channel.send(embed=embed)
         else:
-            await message.channel.send("❌ Movie not found!")
+            await message.channel.send("Movie not found!")
 
     # ----------------------------------------
     # !tv (TV Show Info)
@@ -127,7 +127,7 @@ async def on_message(message):
                 embed.set_image(url=poster)
             await message.channel.send(embed=embed)
         else:
-            await message.channel.send("❌ TV show not found!")
+            await message.channel.send("TV show not found!")
 
     # ----------------------------------------
     # !movietrailer
@@ -149,9 +149,9 @@ async def on_message(message):
                     )
                     break
             else:
-                await message.channel.send("❌ Trailer not found!")
+                await message.channel.send("Trailer not found!")
         else:
-            await message.channel.send("❌ Movie not found!")
+            await message.channel.send("Movie not found!")
 
     # ----------------------------------------
     # !tvtrailer
@@ -173,9 +173,9 @@ async def on_message(message):
                     )
                     break
             else:
-                await message.channel.send("❌ Trailer not found!")
+                await message.channel.send("Trailer not found!")
         else:
-            await message.channel.send("❌ TV show not found!")
+            await message.channel.send("TV show not found!")
 
     # ----------------------------------------
     # !moviecast
@@ -204,7 +204,7 @@ async def on_message(message):
                 embed.set_image(url=pic)
                 await message.channel.send(embed=embed)
         else:
-            await message.channel.send("❌ Movie not found!")
+            await message.channel.send("Movie not found!")
 
     # ----------------------------------------
     # !tvcast
@@ -233,7 +233,7 @@ async def on_message(message):
                 embed.set_image(url=pic)
                 await message.channel.send(embed=embed)
         else:
-            await message.channel.send("❌ TV show not found!")
+            await message.channel.send("TV show not found!")
 
     # ----------------------------------------
     # !movierecommend
@@ -250,11 +250,11 @@ async def on_message(message):
             ).json()
             titles = [r["title"] for r in recs.get("results", [])[:5]]
             if titles:
-                await message.channel.send("🎬 Similar Movies:\n" + ", ".join(titles))
+                await message.channel.send("Similar Movies:\n" + ", ".join(titles))
             else:
-                await message.channel.send("❌ No similar movies found!")
+                await message.channel.send("No similar movies found!")
         else:
-            await message.channel.send("❌ Movie not found!")
+            await message.channel.send("Movie not found!")
 
     # ----------------------------------------
     # !tvrecommend
@@ -271,11 +271,11 @@ async def on_message(message):
             ).json()
             titles = [r["name"] for r in recs.get("results", [])[:5]]
             if titles:
-                await message.channel.send("📺 Similar TV Shows:\n" + ", ".join(titles))
+                await message.channel.send("Similar TV Shows:\n" + ", ".join(titles))
             else:
-                await message.channel.send("❌ No similar TV shows found!")
+                await message.channel.send("No similar TV shows found!")
         else:
-            await message.channel.send("❌ TV show not found!")
+            await message.channel.send("TV show not found!")
 
     # ----------------------------------------
     # !moviesearch & !tvsearch
@@ -291,7 +291,7 @@ async def on_message(message):
                 "🎬 Movie Search Results:\n" + "\n".join(results)
             )
         else:
-            await message.channel.send("❌ No movies found!")
+            await message.channel.send("No movies found!")
 
     elif message.content.startswith("!st"):
         query = message.content[len("!st") :].strip()
@@ -304,7 +304,7 @@ async def on_message(message):
                 "📺 TV Show Search Results:\n" + "\n".join(results)
             )
         else:
-            await message.channel.send("❌ No TV shows found!")
+            await message.channel.send("No TV shows found!")
 
     # ----------------------------------------
     # !trending movies & !trending tv
@@ -351,7 +351,7 @@ async def on_message(message):
                 embed.set_image(url=profile)
             await message.channel.send(embed=embed)
         else:
-            await message.channel.send("❌ Actor not found!")
+            await message.channel.send("Actor not found!")
 
     # ----------------------------------------
     # !moviehelp
@@ -386,7 +386,4 @@ async def on_message(message):
         await message.channel.send(help_text)
 
 
-# -------------------------------
-# Run the bot
-# -------------------------------
 client.run(DISCORD_TOKEN)
