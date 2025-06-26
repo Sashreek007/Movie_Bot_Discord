@@ -2,6 +2,7 @@ import os
 import discord
 from dotenv import load_dotenv
 import requests
+import json
 
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
@@ -10,6 +11,26 @@ TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
+
+# In-memory user data for watchlist and wishlist
+WATCHED_FILE = "watched.json"
+TO_WATCH_FILE = "to_watch.json"
+
+
+def load_data(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            return json.load(f)
+    return {}
+
+
+def save_data(data, file_path):
+    with open(file_path, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+user_watched = load_data(WATCHED_FILE)
+user_to_watch = load_data(TO_WATCH_FILE)
 
 
 # -------------------------------
@@ -39,6 +60,14 @@ def get_tv_watch_providers(id, country="IN"):
         return "No streaming info"
 
 
+# Search helper for posters
+def search_movie(movie_name):
+    url = f"https://api.themoviedb.org/3/search/movie?query={movie_name}&api_key={TMDB_API_KEY}"
+    data = requests.get(url).json()
+    results = data.get("results", [])
+    return results[0] if results else None
+
+
 # -------------------------------
 # Ready event
 # -------------------------------
@@ -55,10 +84,85 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # ----------------------------------------
-    # !movie (Movie Info)
-    # ----------------------------------------
-    if message.content.startswith("!movie"):
+    content = message.content.strip()
+    author_id = str(message.author.id)
+
+    # ----- Watchlist & Wishlist Features -----
+    if content.startswith("!addwatch"):
+        movie_name = content[len("!addwatch") :].strip()
+        user_watchlists.setdefault(author_id, []).append(movie_name)
+        await message.channel.send(f"✅ Added to your watchlist: **{movie_name}**")
+
+    elif content.startswith("!removewatch"):
+        movie_name = content[len("!removewatch") :].strip()
+        if author_id in user_watchlists and movie_name in user_watchlists[author_id]:
+            user_watchlists[author_id].remove(movie_name)
+            await message.channel.send(
+                f"❌ Removed from your watchlist: **{movie_name}**"
+            )
+        else:
+            await message.channel.send(
+                f"⚠️ Movie not found in your watchlist: **{movie_name}**"
+            )
+
+    elif content.startswith("!watchlist"):
+        movies = user_watchlists.get(author_id, [])
+        if not movies:
+            await message.channel.send("📭 Your watchlist is empty!")
+            return
+        reply = "\n**🍿 Your Watchlist:**\n"
+        for movie in movies:
+            result = search_movie(movie)
+            if result:
+                poster = (
+                    f"https://image.tmdb.org/t/p/w200{result['poster_path']}"
+                    if result.get("poster_path")
+                    else "[No poster]"
+                )
+                reply += f"\n🎬 **{result['title']}**\n{poster}\n"
+            else:
+                reply += f"\n🎬 **{movie}** – not found\n"
+        await message.channel.send(reply)
+
+    elif content.startswith("!addwatched"):
+        movie_name = content[len("!addwatched") :].strip()
+        user_wishlists.setdefault(author_id, []).append(movie_name)
+        await message.channel.send(f"✨ Added to your wishlist: **{movie_name}**")
+
+    elif content.startswith("!removewatched"):
+        movie_name = content[len("!removewatched") :].strip()
+        if author_id in user_wishlists and movie_name in user_wishlists[author_id]:
+            user_wishlists[author_id].remove(movie_name)
+            await message.channel.send(
+                f"❌ Removed from your Watched: **{movie_name}**"
+            )
+        else:
+            await message.channel.send(
+                f"⚠️ Movie not found in your Watchedlist: **{movie_name}**"
+            )
+
+    elif content.startswith("!Watched"):
+        movies = user_wishlists.get(author_id, [])
+        if not movies:
+            await message.channel.send("📭 Your wishlist is empty!")
+            return
+        reply = "\n**🎁 Your Wishlist:**\n"
+        for movie in movies:
+            result = search_movie(movie)
+            if result:
+                poster = (
+                    f"https://image.tmdb.org/t/p/w200{result['poster_path']}"
+                    if result.get("poster_path")
+                    else "[No poster]"
+                )
+                reply += f"\n🎬 **{result['title']}**\n{poster}\n"
+            else:
+                reply += f"\n🎬 **{movie}** – not found\n"
+        await message.channel.send(reply)
+
+    # Include original commands here ↓↓↓
+
+    elif message.content.startswith("!movie"):
         query = message.content[len("!movie") :].strip()
         url = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&query={query}"
         data = requests.get(url).json()
@@ -352,11 +456,7 @@ async def on_message(message):
             await message.channel.send(embed=embed)
         else:
             await message.channel.send("Actor not found!")
-
-    # ----------------------------------------
-    # !moviehelp
-    # ----------------------------------------
-    elif message.content.startswith("!helpmovie"):
+    elif content.startswith("!helpmovie"):
         help_text = """
 🎥 **Movie & TV Bot Commands**
 
@@ -380,6 +480,14 @@ async def on_message(message):
 
 **🎭 People**
 - `!actor <name>` — Actor bio
+
+**📑 Lists**
+- `!addwatch <movie name>` — Add to watchlist
+- `!removewatch <movie name>` — Remove from watchlist
+- `!watchlist` — View your watchlist
+- `!addwatched <movie name>` — Add to wishlist
+- `!removewatched <movie name>` — Remove from wishlist
+- `!watched` — View your wishlist
 
 ✅ Use exact names for best results!
 """
